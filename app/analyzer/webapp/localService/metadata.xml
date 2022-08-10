@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+    <edmx:Reference Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Capabilities.V1.xml">
+        <edmx:Include Alias="Capabilities" Namespace="Org.OData.Capabilities.V1"/>
+    </edmx:Reference>
+    <edmx:DataServices>
+        <Schema Namespace="AnalyzeService" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+            <EntityContainer Name="EntityContainer">
+                <EntitySet Name="Orders" EntityType="AnalyzeService.Orders"/>
+                <FunctionImport Name="runAnalyse" Function="AnalyzeService.runAnalyse"/>
+            </EntityContainer>
+            <EntityType Name="Orders">
+                <Key>
+                    <PropertyRef Name="OrderId"/>
+                </Key>
+                <Property Name="OrderId" Type="Edm.Guid" Nullable="false"/>
+                <Property Name="Customer" Type="Edm.String" MaxLength="10"/>
+                <Property Name="Description" Type="Edm.String" MaxLength="40"/>
+                <Property Name="CreateDate" Type="Edm.Date"/>
+            </EntityType>
+            <Function Name="runAnalyse" IsBound="false" IsComposable="false">
+                <Parameter Name="package" Type="Edm.String"/>
+                <Parameter Name="system" Type="Edm.String"/>
+                <ReturnType Type="Edm.String"/>
+            </Function>
+            <Annotations Target="AnalyzeService.EntityContainer/Orders">
+                <Annotation Term="Capabilities.DeleteRestrictions">
+                    <Record Type="Capabilities.DeleteRestrictionsType">
+                        <PropertyValue Property="Deletable" Bool="false"/>
+                    </Record>
+                </Annotation>
+                <Annotation Term="Capabilities.InsertRestrictions">
+                    <Record Type="Capabilities.InsertRestrictionsType">
+                        <PropertyValue Property="Insertable" Bool="false"/>
+                    </Record>
+                </Annotation>
+                <Annotation Term="Capabilities.UpdateRestrictions">
+                    <Record Type="Capabilities.UpdateRestrictionsType">
+                        <PropertyValue Property="Updatable" Bool="false"/>
+                    </Record>
+                </Annotation>
+            </Annotations>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

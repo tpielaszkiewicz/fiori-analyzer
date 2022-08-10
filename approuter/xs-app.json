@@ -1,0 +1,32 @@
+{
+    "authenticationMethod": "route",
+    "logout": {
+        "logoutEndpoint": "/logout"
+    },   
+    "routes": [
+        {
+            "source": "^/sap-test/(.*)$",
+            "target": "/$1",
+            "destination": "hze-pp-400",
+            "authenticationType": "xsuaa",
+            "csrfProtection": false
+        },
+        {
+            "source": "^/resources/(.*)$",
+            "target": "/resources/$1",
+            "authenticationType": "none",
+            "destination": "ui5"
+        },
+        {
+            "source": "^/test-resources/(.*)$",
+            "target": "/test-resources/$1",
+            "authenticationType": "none",
+            "destination": "ui5"
+        },
+        {
+            "source": "^/(.*)",
+            "authenticationType": "xsuaa",
+            "destination": "srv-api"
+        }        
+    ]
+}

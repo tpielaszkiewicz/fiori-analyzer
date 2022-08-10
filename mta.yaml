@@ -1,0 +1,140 @@
+_schema-version: "3.1"
+ID: btp-fiori-analyzer
+description: A simple CAP project.
+version: 1.0.0
+modules:
+- name: btp-fiori-analyzer-srv
+  type: nodejs
+  path: gen/srv
+  requires:
+  - name: btp-fiori-analyzer-dest-srv
+  - name: btp-fiori-analyzer-xsuaa-service
+  - name: btp-fiori-analyzer-connectivity
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+    disk-quota: 512M
+    memory: 256M
+  build-parameters:
+    builder: npm-ci
+- name: btp-fiori-analyzer-dest-content
+  type: com.sap.application.content
+  requires:
+  - name: srv-api
+  - name: btp-fiori-analyzer-dest-srv
+    parameters:
+      content-target: true
+  - name: btp-fiori-analyzer-repo-host
+    parameters:
+      service-key:
+        name: btp-fiori-analyzer-repo-host-key
+  - name: btp-fiori-analyzer-xsuaa-service
+    parameters:
+      service-key:
+        name: btp-fiori-analyzer-uaa-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Authentication: OAuth2UserTokenExchange
+          Name: btp-fiori-analyzer-app-srv
+          TokenServiceInstanceName: btp-fiori-analyzer-xsuaa-service
+          TokenServiceKeyName: btp-fiori-analyzer-uaa-key
+          URL: ~{srv-api/srv-url}
+          sap.cloud.service: compgbtpfiorianalyzer
+        - Name: btp-fiori-analyzer_repo_host
+          ServiceInstanceName: btp-fiori-analyzer-html5-srv
+          ServiceKeyName: btp-fiori-analyzer-repo-host-key
+          sap.cloud.service: compgbtpfiorianalyzer
+        - Authentication: OAuth2UserTokenExchange
+          Name: btp-fiori-analyzer_uaa
+          ServiceInstanceName: btp-fiori-analyzer-xsuaa-service
+          ServiceKeyName: btp-fiori-analyzer-uaa-key
+          sap.cloud.service: compgbtpfiorianalyzer
+        existing_destinations_policy: update
+  build-parameters:
+    no-source: true
+- name: btp-fiori-analyzer-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: btp-fiori-analyzer-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - compgxafiorianalyzerappanalyzer.zip
+      name: compgxafiorianalyzerappanalyzer
+      target-path: resources/
+- name: compgxafiorianalyzerappanalyzer
+  type: html5
+  path: app/analyzer
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: btp-fiori-analyzer-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: btp-fiori-analyzer-html5-srv
+    service-plan: app-host
+- name: btp-fiori-analyzer-dest-srv
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          - Authentication: NoAuthentication
+            HTML5.ForwardAuthToken: true
+            Name: btp-fiori-analyzer-srv-api
+            ProxyType: Internet
+            Type: HTTP
+            URL: ~{srv-api/srv-url}
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: btp-fiori-analyzer-dest-srv
+    service-plan: lite
+  requires:
+  - name: srv-api
+- name: btp-fiori-analyzer_html_repo_runtime
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-plan: app-runtime
+- name: btp-fiori-analyzer-xsuaa-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-plan: application
+- name: btp-fiori-analyzer-connectivity
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: connectivity
+    service-plan: lite
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npx -p @sap/cds-dk cds build --production

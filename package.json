@@ -1,0 +1,100 @@
+{
+    "name": "btp-fiori-analyzer",
+    "version": "1.0.0",
+    "description": "A simple CAP project.",
+    "repository": "<Add your repository here>",
+    "license": "UNLICENSED",
+    "private": true,
+    "dependencies": {
+        "@sap-cloud-sdk/core": "^1.54.2",
+        "@sap-cloud-sdk/http-client": "^2.6.0",
+        "@sap/cds": ">=5",
+        "@sap/xsenv": "^3.3.2", 
+        "@sap/cds-odata-v2-adapter-proxy": "^1.8.14", 
+        "@sap/xssec": "^3.2.13",
+        "express": "^4",
+        "http": "^0.0.1-security",
+        "node-fetch": "^3.2.10",
+        "passport": "^0.6.0",
+        "path": "^0.12.7",
+        "querystring": "^0.2.1"
+    },
+    "devDependencies": {
+        "@sap/ux-specification": "^1.102.3",
+        "sqlite3": "^5.0.4",
+        "rimraf": "^3.0.2"
+    },
+    "scripts": {
+        "start": "cds run",
+        "watch-analyzer": "cds watch --open analyzer/webapp/index.html?sap-ui-xx-viewCache=false",
+        "undeploy": "cf undeploy btp-fiori-analyzer --delete-services --delete-service-keys --delete-service-brokers",
+        "build": "rimraf resources mta_archives && mbt build --mtar archive",
+        "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
+    },
+    "eslintConfig": {
+        "extends": "eslint:recommended",
+        "env": {
+            "es2020": true,
+            "node": true,
+            "jest": true,
+            "mocha": true
+        },
+        "globals": {
+            "SELECT": true,
+            "INSERT": true,
+            "UPDATE": true,
+            "DELETE": true,
+            "CREATE": true,
+            "DROP": true,
+            "CDL": true,
+            "CQL": true,
+            "CXL": true,
+            "cds": true
+        },
+        "rules": {
+            "no-console": "off",
+            "require-atomic-updates": "off"
+        }
+    },
+    "cds": {
+        "requires": {
+            "db": {
+                "kind": "sqlite",
+                "credentials": {
+                    "database": "sqlite.db"
+                }
+            },
+            "zorders00": {
+                "kind": "odata-v2",
+                "model": "srv/external/zorders00",
+                "credentials": {
+                    "destination": "hze-pp-400",
+                    "requestTimeout": 100000,
+                    "path": "/sap/opu/odata/sap/ZBTP_ORDERS_00"
+                },
+                "pool": {
+                    "min": 0,
+                    "max": 1000
+                }
+            },
+            "consolidated": {
+                "kind": "odata-v2",
+                "model": "srv/external/consolidated",
+                "credentials": {
+                    "destination": "hgd-pp-400",
+                    "path": "/sap/opu/odata/sap/ZTMP_C_CONSOLIDATED_CDS"
+                }
+            }
+        },
+        "[production]": {
+            "auth": {
+                "passport": {
+                    "strategy": "JWT"
+                }
+            }
+        }
+    },
+    "sapux": [
+        "app/analyzer"
+    ]
+}

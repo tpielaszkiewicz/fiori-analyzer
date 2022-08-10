@@ -1,0 +1,4 @@
+specVersion: "2.5"
+metadata:
+  name: com.pg.xa.fiori.analyzer.app.analyzer
+type: application
