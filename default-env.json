@@ -1,0 +1,117 @@
+{
+    "SDM_REPOSITORY": "a49cd264-1583-401a-b5f4-3c7a6800e86e",
+    "SDM_ACTIVE": "true",
+    "SAP_SERVICES_API": "https://discovery-center.cloud.sap/serviceCatalog/",
+    "APP_BASE": "https://sandbox.launchpad.cfapps.us20.hana.ondemand.com/site?siteId=e755f389-0e76-4858-aa72-7329e1fa88f9#BTPForm-manageRequest",
+    "WORKFLOW_INBOX_BASE": "https://sandbox.cockpit.workflowmanagement.cfapps.us20.hana.ondemand.com/cp.portal/site#WorkflowTask-DisplayMyInbox",
+    "ADMIN_GROUP_MAIL": "pielaszkiewicz.t@pg.com",
+    "WF_ACTIVE": "true",
+    "VCAP_SERVICES": {
+		"destination": [
+			{
+				"label": "destination",
+				"provider": null,
+				"plan": "lite",
+				"name": "btp-fiori-analyzer-dest-srv",
+				"tags": [
+					"destination",
+					"conn",
+					"connsvc"
+				],
+				"instance_guid": "74b99d80-a9e5-4a1b-9a91-df423d961540",
+				"instance_name": "btp-fiori-analyzer-dest-srv",
+				"binding_guid": "a71f4520-29ee-4a53-a63d-9d2fcbd5a09a",
+				"binding_name": null,
+				"credentials": {
+					"tenantmode": "dedicated",
+					"clientid": "sb-clone74b99d80a9e54a1b9a91df423d961540!b242|destination-xsappname!b3",
+					"credential-type": "binding-secret",
+					"xsappname": "clone74b99d80a9e54a1b9a91df423d961540!b242|destination-xsappname!b3",
+					"clientsecret": "a71f4520-29ee-4a53-a63d-9d2fcbd5a09a$ejvqYtHtJjjoNhDnTWKIuODDOosa5OgemYsHJNm_BHo=",
+					"uri": "https://destination-configuration.cfapps.us20.hana.ondemand.com",
+					"url": "https://sandbox.authentication.us20.hana.ondemand.com",
+					"uaadomain": "authentication.us20.hana.ondemand.com",
+					"instanceid": "74b99d80-a9e5-4a1b-9a91-df423d961540",
+					"verificationkey": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvKur785i3LwE9e5NocaQ\nbLYKpHM5brXuxvWaVzmiXf466nORbXbBDTr4y407AwZkTASijXBaMk/OlhJbXFc9\nTDoLCrrj0F34Cn7aK70xn2ucPMXw9qeC+TSgUijMJyoqlUDGfH/7xK8OZObTijGz\n1p+3mB+MprUmnxrzxyroQO6O5rnYulYc3y1S7HvV10jAmHCXCVlbvPZaGZwaIjaK\nZyOoMz+97EbujZvpX4erwIwt6rk0GfkyncJUigGPqyVQxBdPd7UIDdHq5vpLeUWk\nikXjkl85H8Mq+N4U9lI+rMyT9S6h2O4Bl51b6EEQHFh+4oI44+DG3FGiiBNWeT3G\npQIDAQAB\n-----END PUBLIC KEY-----",
+					"identityzone": "sandbox",
+					"tenantid": "42d3b9a5-4aa4-4bf7-b4e4-55033d1769d2"
+				},
+				"syslog_drain_url": null,
+				"volume_mounts": []
+			}
+		],
+		"xsuaa": [
+			{
+				"label": "xsuaa",
+				"provider": null,
+				"plan": "application",
+				"name": "btp-fiori-analyzer-xsuaa-service",
+				"tags": [
+					"xsuaa"
+				],
+				"instance_guid": "572b0d2c-3d6d-4870-8890-d1c19b3362c9",
+				"instance_name": "btp-fiori-analyzer-xsuaa-service",
+				"binding_guid": "0e02697c-c771-49ff-b1f5-108189b6c7b0",
+				"binding_name": null,
+				"credentials": {
+					"tenantmode": "dedicated",
+					"sburl": "https://internal-xsuaa.authentication.us20.hana.ondemand.com",
+					"subaccountid": "42d3b9a5-4aa4-4bf7-b4e4-55033d1769d2",
+					"credential-type": "instance-secret",
+					"clientid": "sb-btp-fiori-analyzer!t242",
+					"xsappname": "btp-fiori-analyzer!t242",
+					"clientsecret": "xdCfFOUMSKLMj6iz+FtR5fHoAZ0=",
+					"url": "https://sandbox.authentication.us20.hana.ondemand.com",
+					"uaadomain": "authentication.us20.hana.ondemand.com",
+					"verificationkey": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvKur785i3LwE9e5NocaQ\nbLYKpHM5brXuxvWaVzmiXf466nORbXbBDTr4y407AwZkTASijXBaMk/OlhJbXFc9\nTDoLCrrj0F34Cn7aK70xn2ucPMXw9qeC+TSgUijMJyoqlUDGfH/7xK8OZObTijGz\n1p+3mB+MprUmnxrzxyroQO6O5rnYulYc3y1S7HvV10jAmHCXCVlbvPZaGZwaIjaK\nZyOoMz+97EbujZvpX4erwIwt6rk0GfkyncJUigGPqyVQxBdPd7UIDdHq5vpLeUWk\nikXjkl85H8Mq+N4U9lI+rMyT9S6h2O4Bl51b6EEQHFh+4oI44+DG3FGiiBNWeT3G\npQIDAQAB\n-----END PUBLIC KEY-----",
+					"apiurl": "https://api.authentication.us20.hana.ondemand.com",
+					"identityzone": "sandbox",
+					"identityzoneid": "42d3b9a5-4aa4-4bf7-b4e4-55033d1769d2",
+					"tenantid": "42d3b9a5-4aa4-4bf7-b4e4-55033d1769d2",
+					"zoneid": "42d3b9a5-4aa4-4bf7-b4e4-55033d1769d2"
+				},
+				"syslog_drain_url": null,
+				"volume_mounts": []
+			}
+		],
+		"connectivity": [
+			{
+				"label": "connectivity",
+				"provider": null,
+				"plan": "lite",
+				"name": "btp-fiori-analyzer-connectivity",
+				"tags": [
+					"connectivity",
+					"conn",
+					"connsvc"
+				],
+				"instance_guid": "863f08e5-2363-4639-8822-34dae4bf6df3",
+				"instance_name": "btp-fiori-analyzer-connectivity",
+				"binding_guid": "1abd3d50-b3d0-40d5-96b1-1cfc2fb43841",
+				"binding_name": null,
+				"credentials": {
+					"tenantmode": "dedicated",
+					"clientid": "sb-clone863f08e523634639882234dae4bf6df3!b242|connectivity!b8",
+					"token_service_domain": "authentication.us20.hana.ondemand.com",
+					"credential-type": "binding-secret",
+					"token_service_url": "https://sandbox.authentication.us20.hana.ondemand.com",
+					"xsappname": "clone863f08e523634639882234dae4bf6df3!b242|connectivity!b8",
+					"onpremise_proxy_ldap_port": "20001",
+					"onpremise_socks5_proxy_port": "20004",
+					"clientsecret": "1abd3d50-b3d0-40d5-96b1-1cfc2fb43841$6KukNz2D0JruX2McA1VLXPE2K1ITsRhMt8Mdf6jNB7Q=",
+					"onpremise_proxy_http_port": "8887",
+					"url": "https://sandbox.authentication.us20.hana.ondemand.com",
+					"onpremise_proxy_host": "localhost",
+					"uaadomain": "authentication.us20.hana.ondemand.com",
+					"onpremise_proxy_port": "8887",
+					"verificationkey": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvKur785i3LwE9e5NocaQ\nbLYKpHM5brXuxvWaVzmiXf466nORbXbBDTr4y407AwZkTASijXBaMk/OlhJbXFc9\nTDoLCrrj0F34Cn7aK70xn2ucPMXw9qeC+TSgUijMJyoqlUDGfH/7xK8OZObTijGz\n1p+3mB+MprUmnxrzxyroQO6O5rnYulYc3y1S7HvV10jAmHCXCVlbvPZaGZwaIjaK\nZyOoMz+97EbujZvpX4erwIwt6rk0GfkyncJUigGPqyVQxBdPd7UIDdHq5vpLeUWk\nikXjkl85H8Mq+N4U9lI+rMyT9S6h2O4Bl51b6EEQHFh+4oI44+DG3FGiiBNWeT3G\npQIDAQAB\n-----END PUBLIC KEY-----",
+					"identityzone": "sandbox",
+					"tenantid": "42d3b9a5-4aa4-4bf7-b4e4-55033d1769d2",
+					"onpremise_proxy_rfc_port": "20001"
+				},
+				"syslog_drain_url": null,
+				"volume_mounts": []
+			}
+		]
+	}
+}

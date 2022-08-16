@@ -7,9 +7,8 @@
         {
             "source": "^/sap-test/(.*)$",
             "target": "/$1",
-            "destination": "hze-pp-400",
-            "authenticationType": "xsuaa",
-            "csrfProtection": false
+            "destination": "hze-basic-400",
+            "authenticationType": "xsuaa"
         },
         {
             "source": "^/resources/(.*)$",
