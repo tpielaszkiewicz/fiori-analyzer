@@ -43,6 +43,7 @@ entity Severity : sap.common.CodeList {
   criticality : Integer; //  0: grey, 1: red 2: yellow colour,  3: green colour, 
 }
 
+@cds.autoexpose
 entity AnalyseJobs : cuid, managed {
     status: Association to JobStatus @(
         title       : '{i18n>JobStatus}',
@@ -56,8 +57,20 @@ entity AnalyseJobs : cuid, managed {
         title       : '{i18n>JobObjectsType}',
         description : '{i18n>JobObjectsTypeDescription}'
     );
+    jobObjects: Composition of many AnalyseJobObjects  on jobObjects.job = $self;
+    jobPages: Composition of many AnalyseJobPages on jobPages.job = $self;
 }
 
+@cds.autoexpose
+entity AnalyseJobObjects : cuid {
+    objectName: String @(
+        title       : '{i18n>Object}',
+        description : '{i18n>ObjectDescription}'
+    );
+    job : Association to AnalyseJobs;
+}
+
+@cds.autoexpose
 entity AnalyseJobPages : cuid {
     package: String @(
         title       : '{i18n>Package}',
@@ -71,9 +84,11 @@ entity AnalyseJobPages : cuid {
         title       : '{i18n>Application}',
         description : '{i18n>ApplicationDescription}'
     );
-    to_Job : Association to AnalyseJobs;
+    job : Association to AnalyseJobs;
+    analyseResults : Composition of many AnalyseResults on analyseResults.page = $self;
 }
 
+@cds.autoexpose
 entity AnalyseResults : cuid {
     message: String @(
         title       : '{i18n>Message}',
@@ -91,5 +106,9 @@ entity AnalyseResults : cuid {
         title       : '{i18n>Row}',
         description : '{i18n>RowDescription}'
     );
-    to_Page : Association to AnalyseJobPages;
+    rule: String @(
+        title       : '{i18n>Rule}',
+        description : '{i18n>RuleDescription}'
+    );
+    page : Association to AnalyseJobPages on page.ID = $self.page;
 }

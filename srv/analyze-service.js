@@ -8,7 +8,7 @@ const { execSync, exec } = require("child_process");
 class AnalyzeService extends cds.ApplicationService {
     async init() {
 
-        const { Applications, CustomPackages, Systems } = this.entities;
+        const { Applications, CustomPackages, Systems, AnalyseJobs, AnalyseJobPages, AnalyseJobObjects, AnalyseResults } = this.entities;
 
         this.on('READ', Applications, async request => {
             return this._forwardRequestToBackendSystem(request, Systems);
@@ -22,26 +22,107 @@ class AnalyzeService extends cds.ApplicationService {
             let { Package, System } = oReq.params[0];
             let analyzerService = await this._getBackendForSystem(System, Systems);
             let aPackageApps = await analyzerService.tx(oReq).run(SELECT.from('Applications').where({Package: Package}));
-            this._removeReportFile();
+            await this._removeReportFile();
             let aAppsPromises = aPackageApps.map(function(oPackageApp) {
                 return this._singleAppAnalyse(oReq, oPackageApp.AppName, System, Systems, false);
             }.bind(this));
-            return await Promise.all(aAppsPromises).then(function (aPromiseResponses) {
+            return await Promise.all(aAppsPromises).then(async function (aPromiseResponses) {
                 let sAnalysisResult = `${Package} Package analysis:`;
                 for (let iResponse in aPromiseResponses) {
                     sAnalysisResult = `${sAnalysisResult} ${aPromiseResponses[iResponse]},\n`;
                 }
+                await this._parseAnalysisResults();
                 return sAnalysisResult;
             }.bind(this)); 
         });
 
-        this.on('runApplicationAnalyse', async oReq => {
-            let { AppName, System } = oReq.params[0];
-            return await this._singleAppAnalyse(oReq, AppName, System, Systems, true);
+        // this.on('runApplicationAnalyse', async oReq => {
+        //     let { AppName, System } = oReq.params[0]; 
+        //     let sAnalysisResult = await this._singleAppAnalyse(oReq, AppName, System, Systems, true);
+        //     let aResults = await this._parseAnalysisResults();
+        //     return sAnalysisResult;
+        // });
+
+
+        this.on('runAnalyseJob', async oReq => {
+            let ID = oReq.params[0]; 
+            let oJob = await SELECT.one.from(AnalyseJobs).columns('*', 'jobObjects').where({ ID: ID });
+            if (!oJob) {
+                return Promise.reject({
+                    message: `Job is not existing`,
+                    code: 500
+                })
+            } else if (oJob.status_code === '1') {
+                return Promise.reject({
+                    message: `Job is already running`,
+                    code: 500
+                });
+            } else {
+                let aObjectsList = await SELECT.from(AnalyseJobObjects).where({ job_ID: ID });
+                let aExistingAnalysePages = await SELECT.from(AnalyseJobPages).where({ job_ID: ID });
+                let analyzerService = await this._getBackendForSystem(oJob.systemID, Systems);
+                await this._removeReportFile();
+                cds.tx(async ()=>{
+                    // Remove exisitng analyse results 
+                    await DELETE.from(AnalyseResults).where({page: { in: aExistingAnalysePages.map((oAnalysePage) => { return oAnalysePage.ID }) }});
+                    // Remove pages then 
+                    await DELETE.from(AnalyseJobPages).where({job_ID: ID });
+                    // Start processing 
+                    if (oJob.jobObjectsType_code == 'A') {
+                        // Run through apps 
+                        let aApps = await analyzerService.tx(oReq).run(SELECT.from('Applications').where({AppName: { in: aObjectsList.map((oObject) => { return oObject.objectName }) }}));
+                        
+                            let aAppsPromises = aApps.map(async function(oApp) {
+                                return this._singleAppAnalyse(oReq, oApp.AppName, oJob.systemID, Systems, false);
+                            }.bind(this));
+
+                            let aResults = await Promise.all(aAppsPromises).then(async (aResults) => {
+                                return this._parseAnalysisResults();
+                            });
+
+                        
+                        // let sAnalysisResult = await this._removeReportFile();
+                        // let aResults = 
+                    } else {
+                        // Run through packages 
+                    } 
+                });
             
+                //}.bind(this));
+                
+            }
+            // let sAnalysisResult = await this._singleAppAnalyse(oReq, AppName, System, Systems, true);
+            // let aResults = await this._parseAnalysisResults();
+            // return sAnalysisResult;
         });
 
         return super.init();
+    }
+
+    async _parseAnalysisResults(){
+        let sBasePath = path.join(__dirname, 'analyze-container/report.json'); 
+        try {
+            let sResults = await fs.readFile(sBasePath, 'utf8');
+            let aResults = JSON.parse(`{"results":${sResults}}`).results;
+            return aResults.map((oResult) => {
+                let aAppAndPageName = oResult.filePath.replace(path.join(__dirname, 'analyze-container/'), "").split("/");
+                return {
+                    appName: aAppAndPageName[0],
+                    pagenName: aAppAndPageName[1].replaceAll("_", "/"),
+                    analyseResults: oResult.messages.map((oMessage) => {
+                        return {
+                            message: oMessage.message,
+                            rule: oMessage.ruleId,
+                            row: oMessage.line,
+                            column: oMessage.column,
+                            severity: (oMessage.severity === 1) ? "W" : "E"
+                        }
+                    })
+                }
+            }); 
+          } catch (err) {
+            console.error(err);
+          }
     }
 
     async _singleAppAnalyse(oReq, sAppName, sSystem, Systems, bRemoveReport) {

@@ -36,7 +36,7 @@
     "undeploy": "cf undeploy btp-fiori-analyzer --delete-services --delete-service-keys --delete-service-brokers",
     "build": "rimraf resources mta_archives && mbt build --mtar archive",
     "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
-    "lint-analyze": "eslint srv/analyze-container/**/*.js -c .eslintrc -f json -o srv/analyze-container/report.json && echo %errorlevel%"
+    "lint-analyze": "eslint 'srv/analyze-container/**/*.js' -c .eslintrc -f json -o srv/analyze-container/report.json && echo %errorlevel%"
   },
   "eslintConfig": {
     "extends": "eslint:recommended",

@@ -18,10 +18,8 @@ service AnalyzeService @(requires : ['EndUser']) {
             );
             
     } actions {
-        action runPackageAnalyse() returns String;
+         // action runPackageAnalyse() returns String;
     };
-
-   
 
     entity Applications {
         key AppName   : String @(
@@ -45,20 +43,64 @@ service AnalyzeService @(requires : ['EndUser']) {
                 description : '{i18n>CreatedOnDescription}'
             );
     } actions {
-        action runApplicationAnalyse() returns String;
+       // runAnalyseJob action runApplicationAnalyse() returns String;
     };
 
     @readonly  @cds.odata.valuelist
     entity Systems  as projection on fiorianalyzerdb.Systems;
+  
+     
+    entity AnalyseJobs  as projection on fiorianalyzerdb.AnalyseJobs actions {
+        action runAnalyseJob() returns String;
+    }; 
+
+    entity AnalyseJobPages  as projection on fiorianalyzerdb.AnalyseJobPages; 
 
     @readonly  
-    entity AnalyseJobs  as projection on fiorianalyzerdb.Systems;
-
+    entity AnalyseResults  as projection on fiorianalyzerdb.AnalyseResults; 
     @readonly  
-    entity AnalyseJobPages  as projection on fiorianalyzerdb.Systems;
+    entity AnalyseJobObjects  as projection on fiorianalyzerdb.AnalyseJobObjects; 
 
-    @readonly  
-    entity AnalyseResults  as projection on fiorianalyzerdb.Systems;
-
-    function runAnalyse(package : String, system : String) returns String;
+    function runAnalyseJob(jobID : UUID) returns String;
 }
+
+annotate AnalyzeService.Systems @(
+    Capabilities:{
+        InsertRestrictions:{Insertable: true},
+        UpdateRestrictions:{Updatable: true},
+        DeleteRestrictions:{Deletable: true}
+    }
+);
+
+annotate AnalyzeService.AnalyseJobs with @(Capabilities:{
+        InsertRestrictions:{Insertable: true},
+        UpdateRestrictions:{Updatable: false},
+        DeleteRestrictions:{Deletable: false}
+    }
+) {
+    status @readonly
+};
+
+annotate AnalyzeService.AnalyseJobObjects @(
+    Capabilities:{
+        InsertRestrictions:{Insertable: true},
+        UpdateRestrictions:{Updatable: false},
+        DeleteRestrictions:{Deletable: false}
+    }
+);
+
+annotate AnalyzeService.AnalyseResults @(
+    Capabilities:{
+        InsertRestrictions:{Insertable: false},
+        UpdateRestrictions:{Updatable: false},
+        DeleteRestrictions:{Deletable: false}
+    }
+);
+
+annotate AnalyzeService.AnalyseJobPages @(
+    Capabilities:{
+        InsertRestrictions:{Insertable: false},
+        UpdateRestrictions:{Updatable: false},
+        DeleteRestrictions:{Deletable: false}
+    }
+);
