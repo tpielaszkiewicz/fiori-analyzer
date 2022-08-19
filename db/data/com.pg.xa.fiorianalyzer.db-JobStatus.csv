@@ -1,0 +1,5 @@
+code;name;descr
+0;Created;Job Created
+1;In Process;Job In Process
+2;Finished;Job Finished
+3;Failed;Job Failed

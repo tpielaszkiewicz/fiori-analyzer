@@ -44,7 +44,7 @@
         }
     },
     "sap.ui5": {
-        "flexEnabled": true,
+        "flexEnabled": false,
         "dependencies": {
             "minUI5Version": "1.102.1",
             "libs": {
@@ -99,20 +99,20 @@
             },
             "routes": [
                 {
-                    "name": "RouteView1",
+                    "name": "RouteCockpit",
                     "pattern": ":?query:",
                     "target": [
-                        "TargetView1"
+                        "TargetCockpit"
                     ]
                 }
             ],
             "targets": {
-                "TargetView1": {
+                "TargetCockpit": {
                     "viewType": "XML",
                     "transition": "slide",
                     "clearControlAggregation": false,
-                    "viewId": "View1",
-                    "viewName": "View1"
+                    "viewId": "Cockpit",
+                    "viewName": "Cockpit"
                 }
             }
         },

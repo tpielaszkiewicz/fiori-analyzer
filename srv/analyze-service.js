@@ -1,8 +1,6 @@
 const cds = require('@sap/cds')
-const { retrieveJwt } = require("@sap-cloud-sdk/core");
 const path = require('path')
 const fs = require('fs/promises');
-const { constants } = require('fs');
 const { execSync, exec } = require("child_process");
 
 class AnalyzeService extends cds.ApplicationService {
@@ -18,34 +16,8 @@ class AnalyzeService extends cds.ApplicationService {
             return this._forwardRequestToBackendSystem(request, Systems);
         });
 
-        this.on('runPackageAnalyse', async oReq => {
-            let { Package, System } = oReq.params[0];
-            let analyzerService = await this._getBackendForSystem(System, Systems);
-            let aPackageApps = await analyzerService.tx(oReq).run(SELECT.from('Applications').where({Package: Package}));
-            await this._removeReportFile();
-            let aAppsPromises = aPackageApps.map(function(oPackageApp) {
-                return this._singleAppAnalyse(oReq, oPackageApp.AppName, System, Systems, false);
-            }.bind(this));
-            return await Promise.all(aAppsPromises).then(async function (aPromiseResponses) {
-                let sAnalysisResult = `${Package} Package analysis:`;
-                for (let iResponse in aPromiseResponses) {
-                    sAnalysisResult = `${sAnalysisResult} ${aPromiseResponses[iResponse]},\n`;
-                }
-                await this._parseAnalysisResults();
-                return sAnalysisResult;
-            }.bind(this)); 
-        });
-
-        // this.on('runApplicationAnalyse', async oReq => {
-        //     let { AppName, System } = oReq.params[0]; 
-        //     let sAnalysisResult = await this._singleAppAnalyse(oReq, AppName, System, Systems, true);
-        //     let aResults = await this._parseAnalysisResults();
-        //     return sAnalysisResult;
-        // });
-
-
         this.on('runAnalyseJob', async oReq => {
-            let ID = oReq.params[0]; 
+            let ID = oReq.params[0];
             let oJob = await SELECT.one.from(AnalyseJobs).columns('*', 'jobObjects').where({ ID: ID });
             if (!oJob) {
                 return Promise.reject({
@@ -58,49 +30,96 @@ class AnalyzeService extends cds.ApplicationService {
                     code: 500
                 });
             } else {
-                let aObjectsList = await SELECT.from(AnalyseJobObjects).where({ job_ID: ID });
-                let aExistingAnalysePages = await SELECT.from(AnalyseJobPages).where({ job_ID: ID });
-                let analyzerService = await this._getBackendForSystem(oJob.systemID, Systems);
-                await this._removeReportFile();
-                cds.tx(async ()=>{
-                    // Remove exisitng analyse results 
-                    await DELETE.from(AnalyseResults).where({page: { in: aExistingAnalysePages.map((oAnalysePage) => { return oAnalysePage.ID }) }});
-                    // Remove pages then 
-                    await DELETE.from(AnalyseJobPages).where({job_ID: ID });
-                    // Start processing 
-                    if (oJob.jobObjectsType_code == 'A') {
-                        // Run through apps 
-                        let aApps = await analyzerService.tx(oReq).run(SELECT.from('Applications').where({AppName: { in: aObjectsList.map((oObject) => { return oObject.objectName }) }}));
-                        
-                            let aAppsPromises = aApps.map(async function(oApp) {
-                                return this._singleAppAnalyse(oReq, oApp.AppName, oJob.systemID, Systems, false);
-                            }.bind(this));
+                cds.spawn({}, async function (tx) {
+                    // Run as job for big amount of data 
+                    this._runAnalyseJob(oReq, AnalyseJobs, AnalyseJobObjects, AnalyseJobPages, AnalyseResults, Systems);
+                }.bind(this));
 
-                            let aResults = await Promise.all(aAppsPromises).then(async (aResults) => {
-                                return this._parseAnalysisResults();
-                            });
 
-                        
-                        // let sAnalysisResult = await this._removeReportFile();
-                        // let aResults = 
-                    } else {
-                        // Run through packages 
-                    } 
+                return Promise.resolve({
+                    message: 'Run scheduled successfully',
+                    code: 201
                 });
-            
-                //}.bind(this));
-                
             }
-            // let sAnalysisResult = await this._singleAppAnalyse(oReq, AppName, System, Systems, true);
-            // let aResults = await this._parseAnalysisResults();
-            // return sAnalysisResult;
+
         });
 
         return super.init();
     }
 
-    async _parseAnalysisResults(){
-        let sBasePath = path.join(__dirname, 'analyze-container/report.json'); 
+    async _runAnalyseJob(oReq, AnalyseJobs, AnalyseJobObjects, AnalyseJobPages, AnalyseResults, Systems) {
+        let ID = oReq.params[0];
+        let oJob = await SELECT.one.from(AnalyseJobs).columns('*', 'jobObjects').where({ ID: ID });
+
+        let aApps;
+        let bRetCommit = false;
+        let aObjectsList = await SELECT.from(AnalyseJobObjects).where({ job_ID: ID });
+        let analyzerService = await this._getBackendForSystem(oJob.systemID, Systems);
+        await this._removeReportFile();
+        await UPDATE(AnalyseJobs).set({ status_code: '1' }).where({ ID: ID });
+
+        bRetCommit = await cds.tx(async function () {
+            try {
+                // Remove exisitng analyse results 
+                // Test if by composition we are deleting also nested ones 
+                await DELETE.from(AnalyseJobPages).where({ job_ID: ID });
+                // Start processing 
+
+                // Run through apps 
+                aApps = (oJob.jobObjectsType_code == 'A') ? await analyzerService.tx(oReq).run(SELECT.from('Applications').where({ AppName: { in: aObjectsList.map((oObject) => { return oObject.objectName }) } })) :
+                    await analyzerService.tx(oReq).run(SELECT.from('Applications').where({ Package: { in: aObjectsList.map((oObject) => { return oObject.objectName }) } }));
+                if (aApps && aApps.length !== 0) {
+                    let aAppsPromises = aApps.map(async function (oApp) {
+                        return this._singleAppAnalysePrepare(oReq, oApp.AppName, oJob.systemID, Systems);
+                    }.bind(this));
+
+                    let aResults = await Promise.all(aAppsPromises).then(async function (aResults) {
+                        await this._runAnalysys();
+                        aApps.forEach(async function (oApp) {
+                            let sBasePath = path.join(__dirname, 'analyze-container/' + oApp.AppName);
+                            await fs.rm(sBasePath, { recursive: true });
+                        }.bind(this));
+                        return this._parseAnalysisResults();
+                    }.bind(this));
+                    // Do one by one to avoid overriding report.json file 
+
+                    let aNewPageResults = aResults.map(function (oResult) {
+                        // Get package 
+                        let sPackage = aApps.filter((oApp) => { return oApp.AppName = oResult.appName; })[0].Package;
+                        return Object.assign(oResult, { package: sPackage, job_ID: ID });
+                    }.bind(this));
+
+                    await INSERT.into(AnalyseJobPages).entries(aNewPageResults);
+                }
+                await UPDATE(AnalyseJobs).set({ status_code: '2' }).where({ ID: ID });
+                // return true to handle return commit and update status if failed 
+                return true;
+            } catch (err) {
+                return false;
+            }
+        }.bind(this));
+
+        if (!bRetCommit) {
+            await UPDATE(AnalyseJobs).set({ status_code: '3' }).where({ ID: ID });
+            // Clean up folders if existing 
+            if (aApps && aApps.length !== 0) {
+                aApps.forEach(async function (oApp) {
+                    let sBasePath = path.join(__dirname, 'analyze-container/' + oApp.AppName);
+                    try {
+                        const stat = await fs.stat(sBasePath);
+                        if (stat.isDirectory()) {
+                            await fs.rm(sBasePath, { recursive: true });
+                        }
+                    } catch (err) {
+                        // Nothing to cleanup in here
+                    }
+                }.bind(this));
+            }
+        }
+    }
+
+    async _parseAnalysisResults() {
+        let sBasePath = path.join(__dirname, 'analyze-container/report.json');
         try {
             let sResults = await fs.readFile(sBasePath, 'utf8');
             let aResults = JSON.parse(`{"results":${sResults}}`).results;
@@ -108,44 +127,32 @@ class AnalyzeService extends cds.ApplicationService {
                 let aAppAndPageName = oResult.filePath.replace(path.join(__dirname, 'analyze-container/'), "").split("/");
                 return {
                     appName: aAppAndPageName[0],
-                    pagenName: aAppAndPageName[1].replaceAll("_", "/"),
+                    pageName: aAppAndPageName[1].replaceAll("_", "/"),
                     analyseResults: oResult.messages.map((oMessage) => {
                         return {
                             message: oMessage.message,
                             rule: oMessage.ruleId,
                             row: oMessage.line,
                             column: oMessage.column,
-                            severity: (oMessage.severity === 1) ? "W" : "E"
+                            severity_code: (oMessage.severity === 1) ? "W" : "E"
                         }
                     })
                 }
-            }); 
-          } catch (err) {
+            });
+        } catch (err) {
             console.error(err);
-          }
+        }
     }
 
-    async _singleAppAnalyse(oReq, sAppName, sSystem, Systems, bRemoveReport) {
-        if (bRemoveReport) {
-            await this._removeReportFile();
-        }
+    async _singleAppAnalysePrepare(oReq, sAppName, sSystem, Systems) {
         let analyzerService = await this._getBackendForSystem(sSystem, Systems);
         let aAppPages = await analyzerService.tx(oReq).run(SELECT.from('ApplicationPages').where({ AppName: sAppName }));
-        let sBasePath = path.join(__dirname, 'analyze-container/' + sAppName); 
+        let sBasePath = path.join(__dirname, 'analyze-container/' + sAppName);
         await fs.mkdir(sBasePath);
         let aFileUploadPromises = aAppPages.map(function (oAppPage) {
             return this._createFile(sBasePath, oAppPage.PageName, oAppPage.PageContent);
         }.bind(this));
-        return await Promise.all(aFileUploadPromises).then(function () {
-            return this._runAnalysys();
-        }.bind(this)).then(async function (sResponse) {
-            // let aFileDeletePromises = aAppPages.map(function (oAppPage) {
-            //     return this._removeFile(oAppPage.PageName);
-            // }.bind(this));
-            // return await Promise.all(aFileDeletePromises).then(() => { return `${sAppName}: ${sResponse}`; });
-            await fs.rm(sBasePath, { recursive: true });
-            return Promise.resolve(`${sAppName}: ${sResponse}`);
-        }.bind(this));
+        return Promise.all(aFileUploadPromises);
     }
 
     async _connectToBackend(sDestination) {
@@ -157,11 +164,12 @@ class AnalyzeService extends cds.ApplicationService {
     }
 
     async _forwardRequestToBackendSystem(oRequest, Systems) {
+        let analyzerService;
         if (oRequest.params && oRequest.params.length !== 0) {
             let { System } = oRequest.params[0];
-            let analyzerService = await this._getBackendForSystem(System, Systems);
+            analyzerService = await this._getBackendForSystem(System, Systems);
             return analyzerService.tx(oRequest).run(oRequest.query).then((oEntry) => {
-            oEntry.System = System;
+                oEntry.System = System;
                 return oEntry;
             });
         } else if (this._checkSystemFilter(oRequest)) {
@@ -184,7 +192,7 @@ class AnalyzeService extends cds.ApplicationService {
     }
 
     async _createFile(sBasePath, sFileName, sFileContent) {
-       
+
         let sDirectory = sBasePath + "/" + sFileName.replaceAll("/", "_");
         try {
             await fs.writeFile(sDirectory, Buffer.from(sFileContent, "utf-8"));
@@ -200,10 +208,14 @@ class AnalyzeService extends cds.ApplicationService {
 
     async _removeReportFile() {
         let sBasePath = path.join(__dirname, 'analyze-container/report.json');
-        const stat = await fs.stat(sBasePath);
-        if (stat.isFile()) {
-            await fs.unlink(sBasePath);
-        } 
+        try {
+            const stat = await fs.stat(sBasePath);
+            if (stat.isFile()) {
+                await fs.unlink(sBasePath);
+            }
+        } catch (err) {
+            // Nothing to be deleted
+        }
     }
 
     _runAnalysys() {

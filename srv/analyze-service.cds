@@ -30,6 +30,10 @@ service AnalyzeService @(requires : ['EndUser']) {
                 title       : '{i18n>System}',
                 description : '{i18n>SystemDescription}'
             );
+            Description : String @(
+                title       : '{i18n>Application}',
+                description : '{i18n>ApplicationDescription}'
+            );
             Package   : String @(
                 title       : '{i18n>Package}',
                 description : '{i18n>PackageDescription}'
@@ -61,7 +65,8 @@ service AnalyzeService @(requires : ['EndUser']) {
     @readonly  
     entity AnalyseJobObjects  as projection on fiorianalyzerdb.AnalyseJobObjects; 
 
-    function runAnalyseJob(jobID : UUID) returns String;
+    @readonly
+    entity JobObjectTypes as projection on fiorianalyzerdb.JobObjectType; 
 }
 
 annotate AnalyzeService.Systems @(

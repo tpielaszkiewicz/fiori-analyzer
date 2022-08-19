@@ -1,0 +1,119 @@
+<mvc:View controllerName="com.pg.xa.fiori.analyzer.app.analyzer.controller.Cockpit"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true" xmlns:core="sap.ui.core" xmlns:t="sap.ui.table"
+    xmlns="sap.m" xmlns:fb="sap.ui.comp.filterbar">
+    <Page id="page" title="{i18n>title}">
+        <content>
+            <Panel width="auto" class="sapUiResponsiveMargin" accessibleRole="Region">
+                <headerToolbar>
+                    <OverflowToolbar>
+                        <Title text="{i18n>AnalyseJobScheduler}"/>
+                    </OverflowToolbar>
+                </headerToolbar>
+                <content>
+                    <VBox class="sapUiResponsiveMargin">
+                        <Label text="{i18n>System}"  class="sapUiSmallMarginTop"/>
+                        <ComboBox id="systemsPickBox" selectionChange=".onSystemObjectSelectionChange"
+                            items="{
+                                path: '/Systems',
+                                sorter: { path: 'systemID' }
+                            }">
+                            <core:Item key="{systemID}" text="{description}" />
+                        </ComboBox>
+                        <Label text="{i18n>ObjectType}" class="sapUiSmallMarginTop"/>
+                        <ComboBox id="objectsTypePickBox" selectionChange=".onSystemObjectSelectionChange"
+                            items="{
+                                path: '/JobObjectTypes',
+                                sorter: { path: 'code' }
+                            }">
+                            <core:Item key="{code}" text="{descr}" />
+                        </ComboBox> 
+                        <fb:FilterBar id="objectsFilterBar" reset="onObjectsReset" visible="{cockpitModel>/objectsTabVisible}" search="onObjectsSearch" showRestoreButton="true" showClearButton="true">
+                            <fb:filterGroupItems>
+                                <fb:FilterGroupItem visible="{cockpitModel>/appNameFilterVisible}" groupName="__$INTERNAL$" name="A" label="{i18n>AppName}" partOfCurrentVariant="true" visibleInFilterBar="true">
+                                    <fb:control>
+                                        <Input type="Text" value="{cockpitModel>/appNameFilter}"/>
+                                    </fb:control>
+                                </fb:FilterGroupItem>
+
+                                <fb:FilterGroupItem  groupName="__$INTERNAL$" name="B" label="{i18n>Package}" partOfCurrentVariant="true" visibleInFilterBar="true">
+                                    <fb:control>
+                                        <Input type="Text" value="{cockpitModel>/packageFilter}"/>
+                                    </fb:control>
+                                </fb:FilterGroupItem>
+                                </fb:filterGroupItems>
+                        </fb:FilterBar>
+                        <Label id="scheduleRunObjectsLabel" visible="{cockpitModel>/objectsTabVisible}" text="{i18n>SelectObjects}" class="sapUiSmallMarginTop"/>
+                        <t:Table id="scheduleRunObjects"
+                            selectionMode="MultiToggle"
+                            visibleRowCount="10"
+                            ariaLabelledBy="title"
+                            busyIndicatorDelay="0"
+                            rowSelectionChange=".onSelectionChange"
+                            visible="{cockpitModel>/objectsTabVisible}"> 
+ 
+                        </t:Table> 
+                        <Button id="createJobButton" text="{i18n>CreateJob}" enabled="{cockpitModel>/jobStartEnabled}"/>
+                        <Label text="{i18n>PreviousRuns}" class="sapUiSmallMarginTop"/>
+                        <t:Table id="previousRunsTub"
+                            rows="{/AnalyseJobs}"
+                            selectionMode="MultiToggle"
+                            visibleRowCount="5"
+                            ariaLabelledBy="title">  
+                            <t:columns>
+                                <t:Column width="auto">
+                                    <Label text="{i18n>JobName}" />
+                                    <t:template>
+                                        <Text text="{jobName}" wrapping="false" />
+                                    </t:template>
+                                </t:Column>
+                                <t:Column width="auto">
+                                    <Label text="{i18n>CreatedBy}" />
+                                    <t:template>
+                                        <Text text="{createdBy}" wrapping="false" />
+                                    </t:template>
+                                </t:Column>
+                                <t:Column width="auto">
+                                    <Label text="{i18n>CreatedOn}" />
+                                    <t:template>
+                                        <Text text="{createdAt}" wrapping="false" />
+                                    </t:template>
+                                </t:Column>
+                                 <t:Column width="auto">
+                                    <Label text="{i18n>ObjectType}" />
+                                    <t:template>
+                                        <Text text="{jobObjectsType/descr}" wrapping="false" />
+                                    </t:template>
+                                </t:Column>
+                                 <t:Column width="11rem">
+                                    <Label text="{i18n>System}" />
+                                    <t:template>
+                                        <Text text="{systemID}" wrapping="false" />
+                                    </t:template>
+                                </t:Column>
+                                <t:Column width="11rem">
+                                    <Label text="{i18n>Status}" />
+                                    <t:template>
+                                        <Text text="{status/name}" wrapping="false" />
+                                    </t:template>
+                                </t:Column>
+                            </t:columns>
+                        </t:Table> 
+                    </VBox>		
+                </content>
+            </Panel>
+            <Panel width="auto" class="sapUiResponsiveMargin">
+                <headerToolbar>
+                    <OverflowToolbar>
+                        <Title text="Header"/>
+                        <ToolbarSpacer />
+                        <Button icon="sap-icon://settings" />
+                        <Button icon="sap-icon://drop-down-list" />
+                    </OverflowToolbar>
+                </headerToolbar>
+                <content>
+                    <Text text="Lorem ipsum do sm erat" />
+                </content>
+            </Panel> 
+        </content>
+    </Page>
+</mvc:View>

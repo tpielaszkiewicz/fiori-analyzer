@@ -31,20 +31,22 @@ entity JobObjectType : sap.common.CodeList {
   key code : String enum {
     Application    = 'A';
     Package        = 'P';
-  } default 'A'; //> will be used for foreign keys as well
-  criticality : Integer; //  0: grey, 1: red 2: yellow colour,  3: green colour, 
+  } default 'A'; //> will be used for foreign keys as well 
 }
 
 entity Severity : sap.common.CodeList {
   key code : String enum {
     Warning       = 'W';
     Error         = 'E';
-  } default 'A'; //> will be used for foreign keys as well
-  criticality : Integer; //  0: grey, 1: red 2: yellow colour,  3: green colour, 
+  } default 'A'; //> will be used for foreign keys as well 
 }
 
 @cds.autoexpose
 entity AnalyseJobs : cuid, managed {
+    jobName: String @(
+        title       : '{i18n>JobName}',
+        description : '{i18n>JobNameDescription}'
+    );
     status: Association to JobStatus @(
         title       : '{i18n>JobStatus}',
         description : '{i18n>JobStatusDescription}'
@@ -110,5 +112,5 @@ entity AnalyseResults : cuid {
         title       : '{i18n>Rule}',
         description : '{i18n>RuleDescription}'
     );
-    page : Association to AnalyseJobPages on page.ID = $self.page;
+    page : Association to AnalyseJobPages;
 }
