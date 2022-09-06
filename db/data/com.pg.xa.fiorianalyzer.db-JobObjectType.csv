@@ -1,3 +1,4 @@
 code;name;descr
 A;Application;Custom UI5 Applications
 P;Package;Custom Packages
+S;System;System scan (all UI5 Applications from all Packages)

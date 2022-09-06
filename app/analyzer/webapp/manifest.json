@@ -104,6 +104,20 @@
                     "target": [
                         "TargetCockpit"
                     ]
+                },
+                {
+                    "name": "RouteJobDetails",
+                    "pattern": "/jobDetails/{jobId}",
+                    "target": [
+                        "TargetJobDetails"
+                    ]
+                },
+                {
+                    "name": "RouteAppAnalyze",
+                    "pattern": "/appAnalyze/{appName}/{jobId}",
+                    "target": [
+                        "TargetAppAnalyze"
+                    ]
                 }
             ],
             "targets": {
@@ -113,6 +127,20 @@
                     "clearControlAggregation": false,
                     "viewId": "Cockpit",
                     "viewName": "Cockpit"
+                },
+                "TargetAppAnalyze": {
+                    "viewType": "XML",
+                    "transition": "slide",
+                    "clearControlAggregation": false,
+                    "viewId": "AppAnalyze",
+                    "viewName": "AppAnalyze"
+                },
+                "TargetJobDetails": {
+                    "viewType": "XML",
+                    "transition": "slide",
+                    "clearControlAggregation": false,
+                    "viewId": "JobRunDetails",
+                    "viewName": "JobRunDetails"
                 }
             }
         },

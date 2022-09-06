@@ -72,8 +72,7 @@ entity AnalyseJobObjects : cuid {
     job : Association to AnalyseJobs;
 }
 
-@cds.autoexpose
-entity AnalyseJobPages : cuid {
+entity AnalyseJobPages : cuid, managed {
     package: String @(
         title       : '{i18n>Package}',
         description : '{i18n>PackageDescription}'
@@ -90,7 +89,6 @@ entity AnalyseJobPages : cuid {
     analyseResults : Composition of many AnalyseResults on analyseResults.page = $self;
 }
 
-@cds.autoexpose
 entity AnalyseResults : cuid {
     message: String @(
         title       : '{i18n>Message}',

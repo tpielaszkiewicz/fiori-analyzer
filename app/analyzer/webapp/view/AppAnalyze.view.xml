@@ -1,0 +1,115 @@
+<mvc:View controllerName="com.pg.xa.fiori.analyzer.app.analyzer.controller.AppAnalyze"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true" xmlns:core="sap.ui.core" xmlns:t="sap.ui.table"
+    xmlns="sap.m" xmlns:fb="sap.ui.comp.filterbar" xmlns:ce="sap.ui.codeeditor"  xmlns:cust="com.pg.xa.fiori.analyzer.app.analyzer.controls" xmlns:micro="sap.suite.ui.microchart">
+    <Page id="page" title="{i18n>title}" showNavButton="true"
+		navButtonPress=".onNavBack">
+        <content>
+            <VBox class="sapUiSmallMargin">
+                <VBox class="sapUiSmallMargin">
+                    <VBox class="sapUiSmallMarginTop"> 
+                        <Label text="{i18n>JobID}:"/>
+                        <Text text="{job_ID}"/>
+                    </VBox>
+                    <VBox class="sapUiSmallMarginTop">
+                        <Label text="{i18n>AppName}:"/>
+                        <Text text="{AppName}"/>
+                    </VBox>
+                    <VBox class="sapUiSmallMarginTop"> 
+                        <Label text="{i18n>AppAnalyseDate}:"/>
+                        <Text text="{JobAnalyseDate}"/>
+                    </VBox>
+                    <VBox class="sapUiSmallMarginTop">
+                        <Label text="{i18n>NoOfErrors}:"/>
+                        <Text text="{NoOfErrors}"/>
+                    </VBox>
+                    <VBox class="sapUiSmallMarginTop">
+                        <Label text="{i18n>NoOfPrevErrors}:"/>
+                        <Text text="{NoOfPrevErrors}"/>
+                    </VBox>
+                    <VBox class="sapUiSmallMarginTop">
+                        <Label text="{i18n>ErrorsTrend}" /> 
+                        <cust:TrendIndicator currValue="{NoOfErrors}" prevValue="{NoOfPrevErrors}"/>
+                    </VBox>
+                    <VBox class="sapUiSmallMarginTop"> 
+                        <Label text="{i18n>NoOfWarnings}:"/>
+                        <Text text="{NoOfWarnings}"/>
+                    </VBox>
+                    <VBox class="sapUiSmallMarginTop"> 
+                        <Label text="{i18n>NoOfPrevWarnings}:"/>
+                        <Text text="{NoOfPrevWarnings}"/>
+                    </VBox>
+                    <VBox class="sapUiSmallMarginTop">
+                        <Label text="{i18n>WarningsTrend}" /> 
+                        <cust:TrendIndicator currValue="{NoOfWarnings}" prevValue="{NoOfPrevWarnings}"/>
+                    </VBox>
+                    <VBox class="sapUiSmallMarginTop">
+                        <Label text="{i18n>PreviousJobID}:"/>
+                        <Text text="{PreviousJobID}"/>
+                    </VBox>
+                     <VBox class="sapUiSmallMarginTop">
+                        <Label text="{i18n>PreviousJobRunDate}:"/>
+                        <Text text="{PreviousRunDate}"/>
+                    </VBox>
+                </VBox>               
+                <t:Table id="messagesTab"
+                    selectionMode="Single"
+                    visibleRowCount="10"
+                    rowSelectionChange=".onAnalysedAppsSelectionChange"
+                    ariaLabelledBy="title"
+                    rowActionCount="1">  
+                    <t:extension>
+                        <OverflowToolbar style="Clear">
+                            <Title id="titleJobAnalysedApps" text="{i18n>AppMessages}"/>
+                        </OverflowToolbar>
+                    </t:extension>
+                    <t:rowActionTemplate>
+                        <t:RowAction>
+                            <t:RowActionItem type="Custom" visible="true" icon="sap-icon://detail-view" press=".onMessageDetails"/>
+                        </t:RowAction>
+                    </t:rowActionTemplate>
+                    <t:columns>
+                        <t:Column width="auto">
+                            <Label text="{i18n>PageName}" />
+                            <t:template>
+                                <Text text="{pageName}" wrapping="false"/>
+                            </t:template>
+                        </t:Column>
+                        <t:Column width="auto">
+                            <Label text="{i18n>Severity}" />
+                            <t:template>
+                                <Text text="{severity/descr}" wrapping="false"/>
+                            </t:template>
+                        </t:Column>
+                        <t:Column width="auto">
+                            <Label text="{i18n>Message}" />
+                            <t:template>
+                                <Text text="{message}" wrapping="false" />
+                            </t:template>
+                        </t:Column>
+                        <t:Column width="5rem">
+                            <Label text="{i18n>Row}" />
+                            <t:template>
+                                <Text text="{row}" wrapping="false" />
+                            </t:template>
+                        </t:Column>
+                        <t:Column width="5rem">
+                            <Label text="{i18n>Column}" />
+                            <t:template>
+                                <Text text="{column}" wrapping="false" />
+                            </t:template>
+                        </t:Column>
+                        <t:Column>
+                            <Label text="{i18n>Rule}"/>
+                            <t:template>
+                                <Text text="{rule}" wrapping="false" />
+                            </t:template>
+                        </t:Column>
+                    </t:columns>
+                </t:Table> 
+                <ce:CodeEditor id="codeEditor" height="auto" change=".onCodeChange" maxLines="5000" editable="false" visible="false">
+
+                </ce:CodeEditor>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

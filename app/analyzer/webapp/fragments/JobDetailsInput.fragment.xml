@@ -1,0 +1,16 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout">
+       <Dialog id="jobCreateDialog" title="{i18n>ConfirmJobCreation}" resizable="true" draggable="true" xmlns="sap.m" >
+			<l:VerticalLayout width="80%" class="sapUiSmallMargin">
+				<Label labelFor="jobName" text="{i18n>JobName}:" />
+				<Input id="jobName" width="100%" placeholder="{i18n>EnterJobName}" value="{cockpitModel>/jobName}" change=".onJobNameChange" liveChange=".onJobNameChange" />
+			</l:VerticalLayout>
+			<beginButton>
+				<Button press=".onJobConfirm" type="Accept" text="{i18n>Confirm}"
+					class="sapUiTinyMarginTop sapUiTinyMarginBottom" enabled="{cockpitModel>/confirmJobEnabled}" />
+			</beginButton>
+            <endButton>
+				<Button press=".onJobAbort" type="Reject" text="{i18n>Abort}"
+					class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
+			</endButton>
+		</Dialog>
+</core:FragmentDefinition>
